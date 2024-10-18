@@ -6,13 +6,19 @@ import * as https from 'https';
 
 let myStatusBarItem: vscode.StatusBarItem;
 
+interface DataResult {
+    sgv: number;
+    direction: string;
+    date: number;
+}
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate({ subscriptions }: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "nightscout-status-bar" is now active!');
+	console.log('Extension "nightscout-status-bar" is now active!');
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
@@ -22,25 +28,21 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 		// vscode.window.showInformationMessage('Hello World from Nightscout Status Bar!');
-		fetchData()
-		.then((n) => {
-			if (n > 0) {
-				let n2 = n / 18;
-				vscode.window.showInformationMessage(`${n2.toFixed(2)} mmol/L`);
-			} 
-		})
-		.catch((error) => console.error('Error fetching data:', error));
+		// fetchData()
+		// .then((n) => {
+		// 	if (n > 0) {
+		// 		let n2 = n / 18;
+		// 		vscode.window.showInformationMessage(`${n2.toFixed(2)} mmol/L`);
+		// 	} 
+		// })
+		// .catch((error) => console.error('Error fetching data:', error));
+		vscode.window.showInformationMessage(`HELLO WORLD!`);
 	});
 
-	// create a new status bar item that we can now manage
+	// create a new status bar item
 	myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
 	myStatusBarItem.command = myCommandId;
 	subscriptions.push(myStatusBarItem);
-
-	// register some listener that make sure the status bar 
-	// item always up-to-date
-	// subscriptions.push(vscode.window.onDidChangeActiveTextEditor(updateStatusBarItem));
-	// subscriptions.push(vscode.window.onDidChangeTextEditorSelection(updateStatusBarItem));
 
 	// Run updateStatusBarItem every 5 seconds
 	const interval = setInterval(updateStatusBarItem, 5000);
@@ -49,7 +51,7 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 
 	// update status bar item once at start
 	updateStatusBarItem();
-	//context.subscriptions.push(disposable);
+	subscriptions.push(disposable);
 }
 
 // This method is called when your extension is deactivated
@@ -57,10 +59,11 @@ export function deactivate() {}
 
 function updateStatusBarItem(): void {
 	fetchData()
-		.then((n) => {
-			if (n > 0) {
-				let n2 = n / 18;
-				myStatusBarItem.text = `${n2.toFixed(2)} mmol/L`;
+		.then(({ sgv, direction, date }) => {
+			if (sgv > 0) {
+				let sgv2 = sgv / 18;
+				let icon = getTrendIcon(direction);
+				myStatusBarItem.text = `${icon} ${sgv2.toFixed(2)} mmol/L`;
 				myStatusBarItem.show();
 			} else {
 				myStatusBarItem.hide();
@@ -69,12 +72,8 @@ function updateStatusBarItem(): void {
 		.catch((error) => console.error('Error fetching data:', error));
 }
 
-function getNumberOfSelectedLines(): number {
-	return Math.floor(Math.random() * (15 - 5 + 1)) + 5;
-}
-
 // Async function to perform the GET request
-async function fetchData(): Promise<number> {
+async function fetchData(): Promise<DataResult> {
 	// Load URL and API_KEY from environment variables
 	//const URL = process.env.URL;
 	//const API_KEY = process.env.API_KEY;
@@ -85,7 +84,7 @@ async function fetchData(): Promise<number> {
 	// Validate that URL and API_KEY are provided
 	if (!URL_PARAM || !API_KEY) {
 		console.error('Error: URL and API_KEY must be set in environment variables.');
-		process.exit(1);
+		process.exit(1); // TODO: Should extensions do this?
 	}
 
 	// Construct the full URL with query parameters
@@ -109,7 +108,7 @@ async function fetchData(): Promise<number> {
 
 				if (error) {
 					console.error(error.message);
-					res.resume(); // Consume response data to free up memory
+					res.resume();
 					reject(error);
 					return;
 				}
@@ -136,14 +135,18 @@ async function fetchData(): Promise<number> {
 			req.end();
 		});
 
-		// Extract the 'sgv' value
+		// Extract the result from the data
 		if (Array.isArray(data) && data.length > 0) {
-			const sgvValue = data[0].sgv;
-			console.log('SGV Value:', sgvValue);
-			return sgvValue;
+			const { sgv, direction, date } = data[0];
+
+			console.log('SGV Value:', sgv);
+    		console.log('Direction:', direction);
+    		console.log('Date:', date);
+			
+			return { sgv, direction, date };
 		} else {
 			console.error('No data received or data is not an array.');
-			return 0;
+			return { sgv: 0, direction: "", date: 0 };
 		}
 
     } catch (error) {
@@ -152,6 +155,28 @@ async function fetchData(): Promise<number> {
 		} else {
 			console.error('Unexpected error:', error);
 		}
-		return 0;
+		return { sgv: 0, direction: "", date: 0 };
+	}
+}
+
+// Function to get the trend icon based on the direction
+function getTrendIcon(direction: string): string {
+	switch (direction) {
+		case 'Flat':
+			return '→';
+		case 'SingleUp':
+			return '↑';
+		case 'DoubleUp':
+			return '↑↑';
+		case 'SingleDown':
+			return '↓';
+		case 'DoubleDown':
+			return '↓↓';
+		case 'FortyFiveUp':
+			return '↗';
+		case 'FortyFiveDown':
+			return '↘';
+		default:
+			return '??';
 	}
 }
