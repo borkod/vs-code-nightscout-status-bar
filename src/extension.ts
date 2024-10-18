@@ -12,6 +12,8 @@ interface DataResult {
     date: number;
 }
 
+let errorShown = false;
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate({ subscriptions }: vscode.ExtensionContext) {
@@ -60,16 +62,24 @@ export function deactivate() {}
 function updateStatusBarItem(): void {
 	fetchData()
 		.then(({ sgv, direction, date }) => {
+			errorShown = false;
 			if (sgv > 0) {
 				let sgv2 = sgv / 18;
 				let icon = getTrendIcon(direction);
-				myStatusBarItem.text = `${icon} ${sgv2.toFixed(2)} mmol/L`;
+				myStatusBarItem.text = `${sgv2.toFixed(2)} mmol/L ${icon}`;
 				myStatusBarItem.show();
 			} else {
 				myStatusBarItem.hide();
 			}
 		})
-		.catch((error) => console.error('Error fetching data:', error));
+		.catch((error) => {
+			console.error('Error fetching data:', error);
+			if (!errorShown) {
+				vscode.window.showErrorMessage(`Error fetching data: ${error.message || error}`);
+				errorShown = true;
+			}
+			myStatusBarItem.hide();
+		});
 }
 
 // Async function to perform the GET request
@@ -84,7 +94,7 @@ async function fetchData(): Promise<DataResult> {
 	// Validate that URL and API_KEY are provided
 	if (!URL_PARAM || !API_KEY) {
 		console.error('Error: URL and API_KEY must be set in environment variables.');
-		process.exit(1); // TODO: Should extensions do this?
+		throw new Error('URL and API_KEY must be set in environment variables.');
 	}
 
 	// Construct the full URL with query parameters
