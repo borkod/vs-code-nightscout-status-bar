@@ -65,6 +65,8 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push({ dispose: () => clearInterval(interval) });
 
 	// update status bar item once at start
+	myStatusBarItem.text = `---`;
+	myStatusBarItem.show();
 	updateStatusBarItem();
 	context.subscriptions.push(disposable);
 }
@@ -74,7 +76,11 @@ export function deactivate() {}
 
 function updateStatusBarItemAndShowDate(): void {
 	updateStatusBarItem().then(() => {
-		vscode.window.showInformationMessage(`Nightscout last updated at: ${new Date(currentResult.date).toLocaleString()}`);
+		if (currentResult.sgv > 0) {
+			vscode.window.showInformationMessage(`Nightscout CGM last entry at: ${new Date(currentResult.date).toLocaleString()}`);
+		} else {
+			vscode.window.showInformationMessage(`No data available.`);
+		}
 	});
 }
 
@@ -103,17 +109,21 @@ async function updateStatusBarItem(): Promise<void> {
 				let icon = getTrendIcon(currentResult.direction);
 				myStatusBarItem.text = `${sgv.toFixed(2)} ${units} ${icon}`;
 				myStatusBarItem.show();
+				showWarning();
 			} else {
-				//myStatusBarItem.hide();
+				myStatusBarItem.text = `---`;
+				myStatusBarItem.show();
 			}
 		})
 		.catch((error) => {
 			console.error('Error fetching data:', error);
+			currentResult = { sgv: 0, direction: "", date: 0 };
 			if (!errorShown) {
 				vscode.window.showErrorMessage(`Error fetching data: ${error.message || error}`);
 				errorShown = true;
 			}
-			//myStatusBarItem.hide();
+			myStatusBarItem.text = `---`;
+			myStatusBarItem.show();
 		});
 }
 
@@ -201,7 +211,15 @@ async function fetchData(): Promise<DataResult> {
 		} else {
 			console.error('Unexpected error:', error);
 		}
-		return { sgv: 0, direction: "", date: 0 };
+		throw error;
+	}
+}
+
+function showWarning(): void {
+	if (currentResult.sgv > 0 && currentResult.sgv < 90) {
+		vscode.window.showWarningMessage(`Low blood sugar: ${currentResult.sgv / 18} mmol/L`);
+	} else if (currentResult.sgv > 0 && currentResult.sgv > 180) {
+		vscode.window.showWarningMessage(`High blood sugar: ${currentResult.sgv / 18} mmol/L`);
 	}
 }
 

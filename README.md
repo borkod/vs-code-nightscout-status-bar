@@ -1,10 +1,10 @@
 # nightscout-status-bar README
 
-This is the README for your extension "nightscout-status-bar". After writing up a brief description, we recommend including the following sections.
+Nightscout VS CODE extension displays glucose.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Displays glucose readings in status bar.
 
 For example if there is an image subfolder under your extension project workspace:
 
