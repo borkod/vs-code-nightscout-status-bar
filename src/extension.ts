@@ -12,7 +12,19 @@ interface DataResult {
     date: number;
 }
 
+let currentResult : DataResult = { sgv: 0, direction: "", date: 0 };
+
+interface nightscoutConfig {
+	glucoseUnits: string;
+	nightscoutURL: string;
+	token: string;
+}
+
+let myConfig: nightscoutConfig = { glucoseUnits: 'millimolar', nightscoutURL: '', token: '' };
+
 let errorShown = false;
+
+
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -21,6 +33,14 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Extension "nightscout-status-bar" is now active!');
+
+	// Get the configuration object for the extension
+    const config = vscode.workspace.getConfiguration('nightscout-status-bar');
+
+    // Set configuration with settings with default values
+    myConfig.glucoseUnits = config.get<string>('glucoseUnits', 'millimolar');
+    myConfig.nightscoutURL = config.get<string>('nightscoutURL', '');
+    myConfig.token = config.get<string>('token', '');
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
@@ -38,7 +58,7 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 		// 	} 
 		// })
 		// .catch((error) => console.error('Error fetching data:', error));
-		vscode.window.showInformationMessage(`HELLO WORLD!`);
+		updateStatusBarItemAndShowDate();
 	});
 
 	// create a new status bar item
@@ -59,13 +79,20 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 // This method is called when your extension is deactivated
 export function deactivate() {}
 
-function updateStatusBarItem(): void {
+function updateStatusBarItemAndShowDate(): void {
+	updateStatusBarItem().then(() => {
+		vscode.window.showInformationMessage(`Nightscout last updated at: ${new Date(currentResult.date).toLocaleString()}`);
+	});
+}
+
+async function updateStatusBarItem(): Promise<void> {
 	fetchData()
-		.then(({ sgv, direction, date }) => {
+		.then((newResult) => {
+			currentResult = newResult;
 			errorShown = false;
-			if (sgv > 0) {
-				let sgv2 = sgv / 18;
-				let icon = getTrendIcon(direction);
+			if (currentResult.sgv > 0) {
+				let sgv2 = currentResult.sgv / 18;
+				let icon = getTrendIcon(currentResult.direction);
 				myStatusBarItem.text = `${sgv2.toFixed(2)} mmol/L ${icon}`;
 				myStatusBarItem.show();
 			} else {
@@ -84,12 +111,9 @@ function updateStatusBarItem(): void {
 
 // Async function to perform the GET request
 async function fetchData(): Promise<DataResult> {
-	// Load URL and API_KEY from environment variables
-	//const URL = process.env.URL;
-	//const API_KEY = process.env.API_KEY;
-
-	const URL_PARAM = 'b3o.mooo.com';
-	const API_KEY = '';
+	// Load URL and API_KEY from configuration
+	const URL_PARAM = myConfig.nightscoutURL;
+	const API_KEY = myConfig.token;
 
 	// Validate that URL and API_KEY are provided
 	if (!URL_PARAM || !API_KEY) {
@@ -147,7 +171,11 @@ async function fetchData(): Promise<DataResult> {
 
 		// Extract the result from the data
 		if (Array.isArray(data) && data.length > 0) {
-			const { sgv, direction, date } = data[0];
+			const { sgv, direction, date } = {
+				sgv: data[0].sgv,
+				direction: data[0].direction,
+				date: data[0].date
+			};
 
 			console.log('SGV Value:', sgv);
     		console.log('Direction:', direction);
