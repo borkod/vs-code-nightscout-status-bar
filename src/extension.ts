@@ -28,52 +28,45 @@ let errorShown = false;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
-export function activate({ subscriptions }: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Extension "nightscout-status-bar" is now active!');
 
-	// Get the configuration object for the extension
-    const config = vscode.workspace.getConfiguration('nightscout-status-bar');
+	// Set the configuration for the extension
+	updateConfig();
 
-    // Set configuration with settings with default values
-    myConfig.glucoseUnits = config.get<string>('glucoseUnits', 'millimolar');
-    myConfig.nightscoutURL = config.get<string>('nightscoutURL', '');
-    myConfig.token = config.get<string>('token', '');
+	// Listening to configuration changes
+	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
+		console.log("CONFIG EVENT:",e);
+		if (e.affectsConfiguration('nightscout-status-bar')) {
+			updateConfig();
+			updateStatusBarItem();
+		}
+	}));
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
 	const myCommandId = 'nightscout-status-bar.helloWorld';
 	const disposable = vscode.commands.registerCommand(myCommandId, () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		// vscode.window.showInformationMessage('Hello World from Nightscout Status Bar!');
-		// fetchData()
-		// .then((n) => {
-		// 	if (n > 0) {
-		// 		let n2 = n / 18;
-		// 		vscode.window.showInformationMessage(`${n2.toFixed(2)} mmol/L`);
-		// 	} 
-		// })
-		// .catch((error) => console.error('Error fetching data:', error));
 		updateStatusBarItemAndShowDate();
 	});
 
 	// create a new status bar item
 	myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
 	myStatusBarItem.command = myCommandId;
-	subscriptions.push(myStatusBarItem);
+	context.subscriptions.push(myStatusBarItem);
 
-	// Run updateStatusBarItem every 5 seconds
-	const interval = setInterval(updateStatusBarItem, 5000);
+	// Run updateStatusBarItem every 10 minutes
+	const interval = setInterval(updateStatusBarItem, 600000);
 	// Push the interval to the subscriptions array to manage its lifecycle
-	subscriptions.push({ dispose: () => clearInterval(interval) });
+	context.subscriptions.push({ dispose: () => clearInterval(interval) });
 
 	// update status bar item once at start
 	updateStatusBarItem();
-	subscriptions.push(disposable);
+	context.subscriptions.push(disposable);
 }
 
 // This method is called when your extension is deactivated
@@ -85,18 +78,33 @@ function updateStatusBarItemAndShowDate(): void {
 	});
 }
 
+function updateConfig(): void {
+	// Get the configuration object for the extension
+    const config = vscode.workspace.getConfiguration('nightscout-status-bar');
+
+    // Set configuration with settings with default values
+    myConfig.glucoseUnits = config.get<string>('glucoseUnits', 'millimolar');
+    myConfig.nightscoutURL = config.get<string>('nightscoutURL', '');
+    myConfig.token = config.get<string>('token', '');
+}
+
 async function updateStatusBarItem(): Promise<void> {
 	fetchData()
 		.then((newResult) => {
 			currentResult = newResult;
 			errorShown = false;
 			if (currentResult.sgv > 0) {
-				let sgv2 = currentResult.sgv / 18;
+				let sgv = currentResult.sgv / 18;
+				let units = "mmol/L";
+				if (myConfig.glucoseUnits === 'milligrams') {
+					sgv = currentResult.sgv;
+					units = "mg/dL";
+				}
 				let icon = getTrendIcon(currentResult.direction);
-				myStatusBarItem.text = `${sgv2.toFixed(2)} mmol/L ${icon}`;
+				myStatusBarItem.text = `${sgv.toFixed(2)} ${units} ${icon}`;
 				myStatusBarItem.show();
 			} else {
-				myStatusBarItem.hide();
+				//myStatusBarItem.hide();
 			}
 		})
 		.catch((error) => {
@@ -105,7 +113,7 @@ async function updateStatusBarItem(): Promise<void> {
 				vscode.window.showErrorMessage(`Error fetching data: ${error.message || error}`);
 				errorShown = true;
 			}
-			myStatusBarItem.hide();
+			//myStatusBarItem.hide();
 		});
 }
 
