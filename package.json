@@ -36,7 +36,7 @@
             "mg/dL (Milligrams per 100 millilitres)"
           ],
           "enumItemLabels": ["mmol/L", "mg/dL"],
-          "default": "millimolar",
+          "default": "milligrams",
           "description": "Blood glucose units"
         },
         "nightscout-status-bar.nightscoutURL": {
@@ -50,6 +50,30 @@
           "scope": "machine",
           "default": "",
           "markdownDescription": "Your Nightscout API token. See [Get your API Secret Hash](https://nightscout.github.io/nightscout/ifttt/#step-1-get-your-api-secret-hash)"
+        },
+        "nightscout-status-bar.high-glucose-warning.enabled": {
+          "type": "boolean",
+          "scope": "machine",
+          "default": true,
+          "description": "Enable high glucose warning"
+        },
+        "nightscout-status-bar.high-glucose-warning.value": {
+          "type": "number",
+          "scope": "machine",
+          "default": 180,
+          "description": "High glucose warning value (in mg/dL)"
+        },
+        "nightscout-status-bar.low-glucose-warning.enabled": {
+          "type": "boolean",
+          "scope": "machine",
+          "default": true,
+          "description": "Enable low glucose warning"
+        },
+        "nightscout-status-bar.low-glucose-warning.value": {
+          "type": "number",
+          "scope": "machine",
+          "default": 70,
+          "description": "Enable low glucose warning"
         }
       }
     }

@@ -18,9 +18,13 @@ interface nightscoutConfig {
 	glucoseUnits: string;
 	nightscoutURL: string;
 	token: string;
+	lowGlucoseWarningEnabled: boolean;
+	highGlucoseWarningEnabled: boolean;
+	lowGlucoseThreshold: number;
+	highGlucoseThreshold: number;
 }
 
-let myConfig: nightscoutConfig = { glucoseUnits: 'millimolar', nightscoutURL: '', token: '' };
+let myConfig: nightscoutConfig = { glucoseUnits: 'milligrams', nightscoutURL: '', token: '', lowGlucoseWarningEnabled: true, highGlucoseWarningEnabled: true, lowGlucoseThreshold: 70, highGlucoseThreshold: 180 };
 
 let errorShown = false;
 
@@ -89,9 +93,13 @@ function updateConfig(): void {
     const config = vscode.workspace.getConfiguration('nightscout-status-bar');
 
     // Set configuration with settings with default values
-    myConfig.glucoseUnits = config.get<string>('glucoseUnits', 'millimolar');
+    myConfig.glucoseUnits = config.get<string>('glucoseUnits', 'milligrams');
     myConfig.nightscoutURL = config.get<string>('nightscoutURL', '');
     myConfig.token = config.get<string>('token', '');
+	myConfig.lowGlucoseWarningEnabled = config.get<boolean>('low-glucose-warning.enabled', true);
+	myConfig.highGlucoseWarningEnabled = config.get<boolean>('high-glucose-warning.enabled', true);
+	myConfig.lowGlucoseThreshold = config.get<number>('low-glucose-warning.value', 70);
+	myConfig.highGlucoseThreshold = config.get<number>('high-glucose-warning.value', 180);
 }
 
 async function updateStatusBarItem(): Promise<void> {
@@ -100,11 +108,11 @@ async function updateStatusBarItem(): Promise<void> {
 			currentResult = newResult;
 			errorShown = false;
 			if (currentResult.sgv > 0) {
-				let sgv = currentResult.sgv / 18;
-				let units = "mmol/L";
-				if (myConfig.glucoseUnits === 'milligrams') {
-					sgv = currentResult.sgv;
-					units = "mg/dL";
+				let sgv = currentResult.sgv;
+				let units = "mg/dL";
+				if (myConfig.glucoseUnits === 'millimolar') {
+					sgv = currentResult.sgv / 18;
+					units = "mmol/L";
 				}
 				let icon = getTrendIcon(currentResult.direction);
 				myStatusBarItem.text = `${sgv.toFixed(2)} ${units} ${icon}`;
@@ -216,10 +224,10 @@ async function fetchData(): Promise<DataResult> {
 }
 
 function showWarning(): void {
-	if (currentResult.sgv > 0 && currentResult.sgv < 90) {
-		vscode.window.showWarningMessage(`Low blood sugar: ${currentResult.sgv / 18} mmol/L`);
-	} else if (currentResult.sgv > 0 && currentResult.sgv > 180) {
-		vscode.window.showWarningMessage(`High blood sugar: ${currentResult.sgv / 18} mmol/L`);
+	if (currentResult.sgv > 0 && currentResult.sgv < myConfig.lowGlucoseThreshold && myConfig.lowGlucoseWarningEnabled) {
+		vscode.window.showWarningMessage(`Low blood glucose!`);
+	} else if (currentResult.sgv > 0 && currentResult.sgv > myConfig.highGlucoseThreshold && myConfig.highGlucoseWarningEnabled) {
+		vscode.window.showWarningMessage(`High blood glucose!`);
 	}
 }
 
