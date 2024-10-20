@@ -26,24 +26,23 @@ interface nightscoutConfig {
 
 let myConfig: nightscoutConfig = { glucoseUnits: 'milligrams', nightscoutURL: '', token: '', lowGlucoseWarningEnabled: true, highGlucoseWarningEnabled: true, lowGlucoseThreshold: 70, highGlucoseThreshold: 180 };
 
-let errorShown = false;
-
-
+let logOutputChannel : vscode.LogOutputChannel;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
+	// Create a new output channel
+	logOutputChannel = vscode.window.createOutputChannel("Nightscout CGM Output", {log: true});
+
 	// This line of code will only be executed once when your extension is activated
-	console.log('Extension "nightscout-status-bar" is now active!');
+	logOutputChannel.info('Extension "nightscout-status-bar" is now active!');
 
 	// Set the configuration for the extension
 	updateConfig();
 
 	// Listening to configuration changes
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
-		console.log("CONFIG EVENT:",e);
 		if (e.affectsConfiguration('nightscout-status-bar')) {
 			updateConfig();
 			updateStatusBarItem();
@@ -106,7 +105,6 @@ async function updateStatusBarItem(): Promise<void> {
 	fetchData()
 		.then((newResult) => {
 			currentResult = newResult;
-			errorShown = false;
 			if (currentResult.sgv > 0) {
 				let sgv = currentResult.sgv;
 				let units = "mg/dL";
@@ -124,12 +122,9 @@ async function updateStatusBarItem(): Promise<void> {
 			}
 		})
 		.catch((error) => {
-			console.error('Error fetching data:', error);
+			logOutputChannel.error('Error fetching data:', error);
 			currentResult = { sgv: 0, direction: "", date: 0 };
-			if (!errorShown) {
-				vscode.window.showErrorMessage(`Error fetching data: ${error.message || error}`);
-				errorShown = true;
-			}
+			vscode.window.showErrorMessage(`Error fetching data: ${error.message || error}`);
 			myStatusBarItem.text = `---`;
 			myStatusBarItem.show();
 		});
@@ -143,7 +138,7 @@ async function fetchData(): Promise<DataResult> {
 
 	// Validate that URL and API_KEY are provided
 	if (!URL_PARAM || !API_KEY) {
-		console.error('Error: URL and API_KEY must be set in environment variables.');
+		logOutputChannel.error('Error: URL and API_KEY must be set in environment variables.');
 		throw new Error('URL and API_KEY must be set in environment variables.');
 	}
 
@@ -153,7 +148,7 @@ async function fetchData(): Promise<DataResult> {
     fullUrl.searchParams.append('secret', API_KEY);
 	
     try {
-        console.log(`Making request to ${fullUrl}`);
+        logOutputChannel.info(`Making request to ${URL_PARAM}`);
         const data = await new Promise<any>((resolve, reject) => {
 			const req = https.get(fullUrl, (res) => {
 				const { statusCode } = res;
@@ -167,7 +162,7 @@ async function fetchData(): Promise<DataResult> {
 				}
 
 				if (error) {
-					console.error(error.message);
+					logOutputChannel.error(error.message);
 					res.resume();
 					reject(error);
 					return;
@@ -181,14 +176,14 @@ async function fetchData(): Promise<DataResult> {
 						const parsedData = JSON.parse(rawData);
 						resolve(parsedData);
 					} catch (e) {
-						console.error('Error parsing JSON:', (e as Error).message);
+						logOutputChannel.error('Error parsing JSON:', (e as Error).message);
 						reject(e);
 					}
 				});
 			});
 
 			req.on('error', (e) => {
-				console.error('Request error:', e.message);
+				logOutputChannel.error('Request error:', e.message);
 				reject(e);
 			});
 
@@ -203,21 +198,21 @@ async function fetchData(): Promise<DataResult> {
 				date: data[0].date
 			};
 
-			console.log('SGV Value:', sgv);
-    		console.log('Direction:', direction);
-    		console.log('Date:', date);
+			logOutputChannel.info('SGV Value:', sgv);
+    		logOutputChannel.info('Direction:', direction);
+    		logOutputChannel.info('Date:', date);
 			
 			return { sgv, direction, date };
 		} else {
-			console.error('No data received or data is not an array.');
+			logOutputChannel.error('No data received or data is not an array.');
 			return { sgv: 0, direction: "", date: 0 };
 		}
 
     } catch (error) {
 		if (error instanceof Error) {
-			console.error('Error:', error.message);
+			logOutputChannel.error('Error:', error.message);
 		} else {
-			console.error('Unexpected error:', error);
+			logOutputChannel.error('Unexpected error:', error);
 		}
 		throw error;
 	}
