@@ -20,8 +20,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "nightscout-status-bar.helloWorld",
-        "title": "Nightscout Hello World"
+        "command": "nightscout-status-bar.update-and-show-date",
+        "title": "Nightscout: Update and Show Last Entry Date"
       }
     ],
     "configuration": {
@@ -39,11 +39,11 @@
           "default": "milligrams",
           "description": "Blood glucose units"
         },
-        "nightscout-status-bar.nightscoutURL": {
+        "nightscout-status-bar.nightscoutHost": {
           "type": "string",
           "scope": "machine",
           "default": "",
-          "description": "URL of your Nightscout instance"
+          "markdownDescription": "Hostname of your Nightscout instance (e.g. `myinstance.mooo.com`)"
         },
         "nightscout-status-bar.token": {
           "type": "string",
