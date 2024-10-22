@@ -1,22 +1,24 @@
 // The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as https from 'https';
 
 
 let myStatusBarItem: vscode.StatusBarItem;
 
+// Data returned from the glucose sensor
 interface DataResult {
-    sgv: number;
-    direction: string;
-    date: number;
+    sgv: number;		// Sensor Glucose Value
+    direction: string;	// Trend direction
+    date: number;		// Date of the reading (epoch time)
 }
 
+// Latest data from the glucose sensor
 let currentResult : DataResult = { sgv: 0, direction: "", date: 0 };
 
+// Configuration for the extension
 interface nightscoutConfig {
 	glucoseUnits: string;
-	nightscoutURL: string;
+	nightscoutHost: string;
 	token: string;
 	lowGlucoseWarningEnabled: boolean;
 	highGlucoseWarningEnabled: boolean;
@@ -24,18 +26,22 @@ interface nightscoutConfig {
 	highGlucoseThreshold: number;
 }
 
-let myConfig: nightscoutConfig = { glucoseUnits: 'milligrams', nightscoutURL: '', token: '', lowGlucoseWarningEnabled: true, highGlucoseWarningEnabled: true, lowGlucoseThreshold: 70, highGlucoseThreshold: 180 };
+// Default configuration for the extension
+let myConfig: nightscoutConfig = { glucoseUnits: 'milligrams', nightscoutHost: '', token: '', lowGlucoseWarningEnabled: true, highGlucoseWarningEnabled: true, lowGlucoseThreshold: 70, highGlucoseThreshold: 180 };
 
+// Output channel for logging
 let logOutputChannel : vscode.LogOutputChannel;
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+// Update interval for the status bar item
+const updateInterval = 600000; // 10 minutes
+
+// This method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
 
-	// Create a new output channel
+	// Create a new output channel for logging
 	logOutputChannel = vscode.window.createOutputChannel("Nightscout CGM Output", {log: true});
 
-	// This line of code will only be executed once when your extension is activated
+	// This line of code will only be executed once when the extension is activated
 	logOutputChannel.info('Extension "nightscout-status-bar" is now active!');
 
 	// Set the configuration for the extension
@@ -49,10 +55,8 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const myCommandId = 'nightscout-status-bar.helloWorld';
+	// Register the command to show the date of the last entry
+	const myCommandId = 'nightscout-status-bar.update-and-show-date';
 	const disposable = vscode.commands.registerCommand(myCommandId, () => {
 		updateStatusBarItemAndShowDate();
 	});
@@ -62,8 +66,8 @@ export function activate(context: vscode.ExtensionContext) {
 	myStatusBarItem.command = myCommandId;
 	context.subscriptions.push(myStatusBarItem);
 
-	// Run updateStatusBarItem every 10 minutes
-	const interval = setInterval(updateStatusBarItem, 600000);
+	// Run updateStatusBarItem
+	const interval = setInterval(updateStatusBarItem, updateInterval);
 	// Push the interval to the subscriptions array to manage its lifecycle
 	context.subscriptions.push({ dispose: () => clearInterval(interval) });
 
@@ -74,9 +78,10 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 }
 
-// This method is called when your extension is deactivated
+// This method is called when the extension is deactivated
 export function deactivate() {}
 
+// Function to update the status bar item and show the date of the last entry
 function updateStatusBarItemAndShowDate(): void {
 	updateStatusBarItem().then(() => {
 		if (currentResult.sgv > 0) {
@@ -87,13 +92,14 @@ function updateStatusBarItemAndShowDate(): void {
 	});
 }
 
+// Function to update the configuration for the extension
 function updateConfig(): void {
 	// Get the configuration object for the extension
     const config = vscode.workspace.getConfiguration('nightscout-status-bar');
 
     // Set configuration with settings with default values
     myConfig.glucoseUnits = config.get<string>('glucoseUnits', 'milligrams');
-    myConfig.nightscoutURL = config.get<string>('nightscoutURL', '');
+    myConfig.nightscoutHost = config.get<string>('nightscoutHost', '');
     myConfig.token = config.get<string>('token', '');
 	myConfig.lowGlucoseWarningEnabled = config.get<boolean>('low-glucose-warning.enabled', true);
 	myConfig.highGlucoseWarningEnabled = config.get<boolean>('high-glucose-warning.enabled', true);
@@ -101,10 +107,13 @@ function updateConfig(): void {
 	myConfig.highGlucoseThreshold = config.get<number>('high-glucose-warning.value', 180);
 }
 
+// Async function to get the latest data and update the status bar item
 async function updateStatusBarItem(): Promise<void> {
 	fetchData()
 		.then((newResult) => {
+			// Update the current result
 			currentResult = newResult;
+			// Update the status bar item
 			if (currentResult.sgv > 0) {
 				let sgv = currentResult.sgv;
 				let units = "mg/dL";
@@ -112,15 +121,18 @@ async function updateStatusBarItem(): Promise<void> {
 					sgv = currentResult.sgv / 18;
 					units = "mmol/L";
 				}
+				// Get the trend icon based on the direction
 				let icon = getTrendIcon(currentResult.direction);
-				myStatusBarItem.text = `${sgv.toFixed(2)} ${units} ${icon}`;
+				myStatusBarItem.text = `${sgv.toFixed(1)} ${units} ${icon}`;
 				myStatusBarItem.show();
 				showWarning();
+			// If no data is available
 			} else {
 				myStatusBarItem.text = `---`;
 				myStatusBarItem.show();
 			}
 		})
+		// Catch any errors and log them
 		.catch((error) => {
 			logOutputChannel.error('Error fetching data:', error);
 			currentResult = { sgv: 0, direction: "", date: 0 };
@@ -132,14 +144,14 @@ async function updateStatusBarItem(): Promise<void> {
 
 // Async function to perform the GET request
 async function fetchData(): Promise<DataResult> {
-	// Load URL and API_KEY from configuration
-	const URL_PARAM = myConfig.nightscoutURL;
+	// Load Hostname and API Token from configuration
+	const URL_PARAM = myConfig.nightscoutHost;
 	const API_KEY = myConfig.token;
 
 	// Validate that URL and API_KEY are provided
 	if (!URL_PARAM || !API_KEY) {
-		logOutputChannel.error('Error: URL and API_KEY must be set in environment variables.');
-		throw new Error('URL and API_KEY must be set in environment variables.');
+		logOutputChannel.error('Error: Hostname and API Token must be set in the extension configuration.');
+		throw new Error('Hostname and API Token must be set in extension configuration.');
 	}
 
 	// Construct the full URL with query parameters
@@ -149,6 +161,7 @@ async function fetchData(): Promise<DataResult> {
 	
     try {
         logOutputChannel.info(`Making request to ${URL_PARAM}`);
+		// Make the GET request
         const data = await new Promise<any>((resolve, reject) => {
 			const req = https.get(fullUrl, (res) => {
 				const { statusCode } = res;
@@ -198,16 +211,18 @@ async function fetchData(): Promise<DataResult> {
 				date: data[0].date
 			};
 
+			// Log the data
 			logOutputChannel.info('SGV Value:', sgv);
     		logOutputChannel.info('Direction:', direction);
     		logOutputChannel.info('Date:', date);
 			
 			return { sgv, direction, date };
 		} else {
+			// Log an error in case of no data
 			logOutputChannel.error('No data received or data is not an array.');
 			return { sgv: 0, direction: "", date: 0 };
 		}
-
+	// Catch any errors and log them
     } catch (error) {
 		if (error instanceof Error) {
 			logOutputChannel.error('Error:', error.message);
@@ -218,6 +233,7 @@ async function fetchData(): Promise<DataResult> {
 	}
 }
 
+// Function to show a warning message if the glucose level is too low or too high
 function showWarning(): void {
 	if (currentResult.sgv > 0 && currentResult.sgv < myConfig.lowGlucoseThreshold && myConfig.lowGlucoseWarningEnabled) {
 		vscode.window.showWarningMessage(`Low blood glucose!`);
