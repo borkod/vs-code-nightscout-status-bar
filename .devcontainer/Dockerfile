@@ -2,3 +2,4 @@
 FROM mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye
 
 RUN npm install -g @vscode/vsce
+RUN npm install --save-dev sinon @types/sinon
