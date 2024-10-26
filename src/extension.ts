@@ -15,6 +15,9 @@ interface DataResult {
 // Latest data from the glucose sensor
 let currentResult : DataResult = { sgv: 0, direction: "", date: 0 };
 
+// Variable to hold the timeout ID
+let updateTimeout: NodeJS.Timeout;
+
 // Configuration for the extension
 interface nightscoutConfig {
 	glucoseUnits: string;
@@ -24,16 +27,14 @@ interface nightscoutConfig {
 	highGlucoseWarningEnabled: boolean;
 	lowGlucoseThreshold: number;
 	highGlucoseThreshold: number;
+	updateInterval: number;
 }
 
 // Default configuration for the extension
-let myConfig: nightscoutConfig = { glucoseUnits: 'milligrams', nightscoutHost: '', token: '', lowGlucoseWarningEnabled: true, highGlucoseWarningEnabled: true, lowGlucoseThreshold: 70, highGlucoseThreshold: 180 };
+let myConfig: nightscoutConfig = { glucoseUnits: 'milligrams', nightscoutHost: '', token: '', lowGlucoseWarningEnabled: true, highGlucoseWarningEnabled: true, lowGlucoseThreshold: 70, highGlucoseThreshold: 180, updateInterval: 10 };
 
 // Output channel for logging
 let logOutputChannel : vscode.LogOutputChannel;
-
-// Update interval for the status bar item
-const updateInterval = 600000; // 10 minutes
 
 // This method is called when the extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -66,20 +67,37 @@ export function activate(context: vscode.ExtensionContext) {
 	myStatusBarItem.command = myCommandId;
 	context.subscriptions.push(myStatusBarItem);
 
-	// Run updateStatusBarItem
-	const interval = setInterval(updateStatusBarItem, updateInterval);
-	// Push the interval to the subscriptions array to manage its lifecycle
-	context.subscriptions.push({ dispose: () => clearInterval(interval) });
-
 	// update status bar item once at start
 	myStatusBarItem.text = `---`;
 	myStatusBarItem.show();
 	updateStatusBarItem();
+	// Manage the timeout lifecycle
+    context.subscriptions.push({
+        dispose: () => {
+            if (updateTimeout) {
+                clearTimeout(updateTimeout);
+            }
+        }
+    });
 	context.subscriptions.push(disposable);
 }
 
 // This method is called when the extension is deactivated
 export function deactivate() {}
+
+// Function to schedule the next update
+function scheduleUpdate() {
+	// Clear any existing timeout to prevent multiple timers
+	if (updateTimeout) {
+		clearTimeout(updateTimeout);
+	}
+    // Calculate the interval in milliseconds
+    const interval = myConfig.updateInterval * 60 * 1000;
+    // Schedule the next update
+    updateTimeout = setTimeout(() => {
+        updateStatusBarItem();
+    }, interval);
+}
 
 // Function to update the status bar item and show the date of the last entry
 function updateStatusBarItemAndShowDate(): void {
@@ -105,6 +123,7 @@ function updateConfig(): void {
 	myConfig.highGlucoseWarningEnabled = config.get<boolean>('high-glucose-warning.enabled', true);
 	myConfig.lowGlucoseThreshold = config.get<number>('low-glucose-warning.value', 70);
 	myConfig.highGlucoseThreshold = config.get<number>('high-glucose-warning.value', 180);
+	myConfig.updateInterval = config.get<number>('updateInterval', 10);
 }
 
 // Async function to get the latest data and update the status bar item
@@ -139,6 +158,10 @@ async function updateStatusBarItem(): Promise<void> {
 			vscode.window.showErrorMessage(`Error fetching data: ${error.message || error}`);
 			myStatusBarItem.text = `---`;
 			myStatusBarItem.show();
+		})
+		.finally(() => {
+			// Schedule the next update after completing the current one
+			scheduleUpdate();
 		});
 }
 
