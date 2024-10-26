@@ -51,6 +51,12 @@
           "default": "",
           "markdownDescription": "Your Nightscout API token. See [Get your API Secret Hash](https://nightscout.github.io/nightscout/ifttt/#step-1-get-your-api-secret-hash)"
         },
+        "nightscout-status-bar.updateInterval": {
+          "type": "number",
+          "scope": "machine",
+          "default": 10,
+          "markdownDescription": "Time interval (in minutes) between queries for updated data"
+        },
         "nightscout-status-bar.high-glucose-warning.enabled": {
           "type": "boolean",
           "scope": "machine",
@@ -73,7 +79,7 @@
           "type": "number",
           "scope": "machine",
           "default": 70,
-          "description": "Enable low glucose warning"
+          "description": "Low glucose warning value (in mg/dL)"
         }
       }
     }
