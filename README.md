@@ -1,71 +1,43 @@
-# nightscout-status-bar README
+# Nightscout Extension for Visual Studio Code
 
-Nightscout VS CODE extension displays glucose.
+[Nightscout](https://nightscout.github.io/) is an open-source application that helps people with diabetes and their families visualize and share real-time data from Continuous Glucose Monitoring sensors. It serves as a centralized platform for tracking blood glucose and insulin treatment, accessible via any internet-connected web browser.
+
+This Visual Studio Code extension retrieves the most recent blood glucose reading from your Nightscout instance and displays it in your Visual Studio Code status bar.
+
+![Nightscout Extension for Visual Studio Code](https://raw.githubusercontent.com/borkod/vs-code-nightscout-status-bar/main/images/nightscout-vs-code.gif)
 
 ## Features
 
-Displays glucose readings in status bar.
+- Periodically retrieves the most recent blood glucose reading from your Nightscout instance and displays it in your Visual Studio Code Status bar
+- Provides visual indicator of your blood glucose levels trend
+- Provides `Nightscout: Update and Show Last Entry Date` command to manually trigger an update and display the date and time of the latest reading in your Nightscout instance
+  - Command can be triggered by clicking on your blood glucose reading in the status bar or via VS Code Command Palette
+- Low and High blood glucose level warnings
 
-For example if there is an image subfolder under your extension project workspace:
+![Nightscout Extension Warning](https://raw.githubusercontent.com/borkod/vs-code-nightscout-status-bar/main/images/nightscout-warning.gif)
 
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- Fully configurable settings
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- You need a running Nightscout instance. There are [Do-It-Yourself (DIY)](https://nightscout.github.io/nightscout/new_user/) and [Nightscout as a Service](https://nightscout.github.io/#nightscout-as-a-service) hosting options available.
+- You will need to [create a token](https://nightscout.github.io/nightscout/security/#create-authentication-tokens-for-users) for configuring extension authentication to your Nightscout instance. The token should have `readable` role.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
+![Nightscout Extension Settings](https://raw.githubusercontent.com/borkod/vs-code-nightscout-status-bar/main/images/nightscout-settings.png)
 
 This extension contributes the following settings:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+- `nightscout-status-bar.nightscoutHost`: Hostname of your Nightscout instance (e.g. `myinstance.mooo.com`).
+- `nightscout-status-bar.token`: Your Nightscout API token. See [Create Authentication Tokens for Users](https://nightscout.github.io/nightscout/security/#create-authentication-tokens-for-users).
+- `nightscout-status-bar.glucoseUnits`: Blood glucose units. Supported units are mmol/L (Millimoles Per Litre) and mg/dL (Milligrams per 100 millilitres).
+- `nightscout-status-bar.high-glucose-warning.enabled`: Enables high glucose warning.
+- `nightscout-status-bar.high-glucose-warning.value`: High glucose warning threshold value (in mg/dL).
+- `nightscout-status-bar.low-glucose-warning.enabled`: Enables low glucose warning.
+- `nightscout-status-bar.low-glucose-warning.value`: Low glucose warning threshold value (in mg/dL).
+- `nightscout-status-bar.updateInterval`: Time interval (in minutes) between queries for updated data.
 
-## Known Issues
+## Debugging
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+This extension creates `Nightscout CGM Output` output channel. Several info, warning, and error log messages are written to this channel. You can view this channel to inspect actions the extension is performing.
