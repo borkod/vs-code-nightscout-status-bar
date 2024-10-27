@@ -124,6 +124,7 @@ function updateConfig(): void {
 	myConfig.lowGlucoseThreshold = config.get<number>('low-glucose-warning.value', 70);
 	myConfig.highGlucoseThreshold = config.get<number>('high-glucose-warning.value', 180);
 	myConfig.updateInterval = config.get<number>('updateInterval', 10);
+	logOutputChannel.info('Configuration updated.');
 }
 
 // Async function to get the latest data and update the status bar item
@@ -180,7 +181,7 @@ async function fetchData(): Promise<DataResult> {
 	// Construct the full URL with query parameters
     const fullUrl = new URL(`https://${URL_PARAM}/api/v1/entries.json`);
     fullUrl.searchParams.append('count', '1');
-    fullUrl.searchParams.append('secret', API_KEY);
+    fullUrl.searchParams.append('token', API_KEY);
 	
     try {
         logOutputChannel.info(`Making request to ${URL_PARAM}`);

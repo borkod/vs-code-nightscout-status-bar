@@ -1,7 +1,8 @@
 {
   "name": "nightscout-status-bar",
   "displayName": "Nightscout Status Bar",
-  "description": "VS Code Extension to show Nightscout blood glucose level in the status bar.",
+  "description": "VS Code Extension to show Nightscout blood glucose reading in the status bar.",
+  "icon": "images/nightscout-logo.png",
   "version": "0.0.1",
   "repository": {
 		"type": "git",
@@ -49,7 +50,7 @@
           "type": "string",
           "scope": "machine",
           "default": "",
-          "markdownDescription": "Your Nightscout API token. See [Get your API Secret Hash](https://nightscout.github.io/nightscout/ifttt/#step-1-get-your-api-secret-hash)"
+          "markdownDescription": "Your Nightscout API token. See [Create Authentication Tokens for Users](https://nightscout.github.io/nightscout/security/#create-authentication-tokens-for-users)"
         },
         "nightscout-status-bar.updateInterval": {
           "type": "number",
