@@ -3,21 +3,41 @@
   "displayName": "Nightscout Status Bar",
   "description": "VS Code Extension to show Nightscout blood glucose reading in the status bar.",
   "icon": "images/nightscout-logo.png",
-  "version": "0.0.1",
+  "version": "0.8.0",
+  "license": "MIT",
   "repository": {
 		"type": "git",
 		"url": "https://github.com/borkod/vs-code-nightscout-status-bar"
 	},
+  "homepage": "https://github.com/borkod/vs-code-nightscout-status-bar",
+  "bugs": {
+    "url": "https://github.com/borkod/vs-code-nightscout-status-bar/issues"
+  },
+  "galleryBanner": {
+    "color": "#000000",
+    "theme": "light"
+  },
   "engines": {
     "vscode": "^1.94.0"
   },
   "categories": [
     "Other"
   ],
+  "pricing": "Free",
+  "publisher": "borkod",
+  "keywords": [
+    "nightscout",
+    "blood glucose",
+    "diabetes",
+    "status bar"
+  ],
   "activationEvents": [
 		"onStartupFinished"
 	],
   "main": "./dist/extension.js",
+  "sponsor": {
+    "url": "https://github.com/sponsors/borkod"
+  },
   "contributes": {
     "commands": [
       {
