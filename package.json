@@ -3,7 +3,7 @@
   "displayName": "Nightscout Status Bar",
   "description": "VS Code Extension to show Nightscout blood glucose reading in the status bar.",
   "icon": "images/nightscout-logo.png",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "license": "MIT",
   "repository": {
 		"type": "git",
@@ -48,18 +48,6 @@
     "configuration": {
       "title": "Nightscout Status Bar",
       "properties": {
-        "nightscout-status-bar.glucoseUnits": {
-          "type": "string",
-          "scope": "machine",
-          "enum": ["millimolar", "milligrams"],
-          "markdownEnumDescriptions": [
-            "mmol/L (Millimoles Per Litre)",
-            "mg/dL (Milligrams per 100 millilitres)"
-          ],
-          "enumItemLabels": ["mmol/L", "mg/dL"],
-          "default": "milligrams",
-          "description": "Blood glucose units"
-        },
         "nightscout-status-bar.nightscoutHost": {
           "type": "string",
           "scope": "machine",
@@ -72,11 +60,17 @@
           "default": "",
           "markdownDescription": "Your Nightscout API token. See [Create Authentication Tokens for Users](https://nightscout.github.io/nightscout/security/#create-authentication-tokens-for-users)"
         },
-        "nightscout-status-bar.updateInterval": {
-          "type": "number",
+        "nightscout-status-bar.glucoseUnits": {
+          "type": "string",
           "scope": "machine",
-          "default": 10,
-          "markdownDescription": "Time interval (in minutes) between queries for updated data"
+          "enum": ["millimolar", "milligrams"],
+          "markdownEnumDescriptions": [
+            "mmol/L (Millimoles Per Litre)",
+            "mg/dL (Milligrams per 100 millilitres)"
+          ],
+          "enumItemLabels": ["mmol/L", "mg/dL"],
+          "default": "milligrams",
+          "description": "Blood glucose units"
         },
         "nightscout-status-bar.high-glucose-warning.enabled": {
           "type": "boolean",
@@ -101,6 +95,12 @@
           "scope": "machine",
           "default": 70,
           "description": "Low glucose warning value (in mg/dL)"
+        },
+        "nightscout-status-bar.updateInterval": {
+          "type": "number",
+          "scope": "machine",
+          "default": 10,
+          "markdownDescription": "Time interval (in minutes) between queries for updated data"
         }
       }
     }
