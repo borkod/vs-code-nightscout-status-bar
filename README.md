@@ -1,6 +1,6 @@
 # Nightscout Extension for Visual Studio Code
 
-[Nightscout](https://nightscout.github.io/) is an open-source application that helps people with diabetes and their families visualize and share real-time data from Continuous Glucose Monitoring sensors. It serves as a centralized platform for tracking blood glucose and insulin treatment, accessible via any internet-connected web browser.
+[Nightscout](https://nightscout.github.io/) is an open-source application that helps people with diabetes and their families visualize and share real-time data from Continuous Glucose Monitoring sensors. It serves as a centralized platform for tracking blood glucose levels, accessible via any internet-connected web browser.
 
 This Visual Studio Code extension retrieves the most recent blood glucose reading from your Nightscout instance and displays it in your Visual Studio Code status bar.
 
@@ -41,3 +41,13 @@ This extension contributes the following settings:
 ## Debugging
 
 This extension creates `Nightscout CGM Output` output channel. Several info, warning, and error log messages are written to this channel. You can view this channel to inspect actions the extension is performing.
+
+If you encounter any problems, open a GitHub [issue](https://github.com/borkod/vs-code-nightscout-status-bar/issues).
+
+## About
+
+This extension was inspired by Scott Hanselman's [blog post](https://www.hanselman.com/blog/a-nightscout-segment-for-ohmyposh-shows-my-realtime-blood-sugar-readings-in-my-git-prompt) and the [Nightscout segment](https://ohmyposh.dev/docs/segments/health/nightscout) for [Oh My Posh](https://ohmyposh.dev/) shell prompt engine.
+
+I was looking for a tool that would allow me to monitor my blood glucose levels without distractions. As a Visual Studio Code user, I believed that displaying the readings in the status bar would seamlessly integrate with my development environment.
+
+I hope others find this tool helpful too!
