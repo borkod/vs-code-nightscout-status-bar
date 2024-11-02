@@ -3,7 +3,7 @@
   "displayName": "Nightscout Status Bar",
   "description": "VS Code Extension to show Nightscout blood glucose reading in the status bar.",
   "icon": "images/nightscout-logo.png",
-  "version": "0.8.3",
+  "version": "0.8.4",
   "license": "MIT",
   "repository": {
 		"type": "git",

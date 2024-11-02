@@ -47,8 +47,8 @@ let myConfig: nightscoutConfig = {
 };
 
 // Multipliers for the low and high glucose thresholds
-let lowGlucoseMultiplier = 1.15;
-let highGlucoseMultiplier = 0.85;
+let lowGlucoseMultiplier = 0.85;
+let highGlucoseMultiplier = 1.3;
 
 // Output channel for logging
 let logOutputChannel : vscode.LogOutputChannel;
@@ -284,14 +284,14 @@ function showWarning(): void {
 		vscode.window.showWarningMessage(`High blood glucose!`);
 	}
 
-	if (currentResult.sgv > 0 && currentResult.sgv < myConfig.lowGlucoseThreshold && myConfig.lowGlucoseWarningBackgroundEnabled) {
-		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
+	if (currentResult.sgv > 0 && currentResult.sgv < myConfig.lowGlucoseThreshold && currentResult.sgv > lowGlucoseMultiplier*myConfig.lowGlucoseThreshold && myConfig.lowGlucoseWarningBackgroundEnabled) {
+		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
 	} else if (currentResult.sgv > 0 && currentResult.sgv < lowGlucoseMultiplier*myConfig.lowGlucoseThreshold && myConfig.lowGlucoseWarningBackgroundEnabled) {
-		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
-	} else if (currentResult.sgv > 0 && currentResult.sgv > myConfig.highGlucoseThreshold && myConfig.highGlucoseWarningBackgroundEnabled) {
 		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
-	} else if (currentResult.sgv > 0 && currentResult.sgv > highGlucoseMultiplier*myConfig.highGlucoseThreshold && myConfig.highGlucoseWarningBackgroundEnabled) {
+	} else if (currentResult.sgv > 0 && currentResult.sgv > myConfig.highGlucoseThreshold && currentResult.sgv < highGlucoseMultiplier*myConfig.highGlucoseThreshold && myConfig.highGlucoseWarningBackgroundEnabled) {
 		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+	} else if (currentResult.sgv > 0 && currentResult.sgv > highGlucoseMultiplier*myConfig.highGlucoseThreshold && myConfig.highGlucoseWarningBackgroundEnabled) {
+		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
 	} else {
 		myStatusBarItem.backgroundColor = undefined;
 	}
