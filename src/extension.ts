@@ -286,11 +286,11 @@ function showWarning(): void {
 
 	if (currentResult.sgv > 0 && currentResult.sgv < myConfig.lowGlucoseThreshold && myConfig.lowGlucoseWarningBackgroundEnabled) {
 		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
-	} else if (currentResult.sgv > 0 && currentResult.sgv < lowGlucoseMultiplier*myConfig.lowGlucoseThreshold && (currentResult.direction === 'SingleDown' || currentResult.direction === 'DoubleDown') && myConfig.lowGlucoseWarningBackgroundEnabled) {
+	} else if (currentResult.sgv > 0 && currentResult.sgv < lowGlucoseMultiplier*myConfig.lowGlucoseThreshold && myConfig.lowGlucoseWarningBackgroundEnabled) {
 		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
 	} else if (currentResult.sgv > 0 && currentResult.sgv > myConfig.highGlucoseThreshold && myConfig.highGlucoseWarningBackgroundEnabled) {
 		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
-	} else if (currentResult.sgv > 0 && currentResult.sgv > highGlucoseMultiplier*myConfig.highGlucoseThreshold && (currentResult.direction === 'SingleUp' || currentResult.direction === 'DoubleUp') && myConfig.highGlucoseWarningBackgroundEnabled) {
+	} else if (currentResult.sgv > 0 && currentResult.sgv > highGlucoseMultiplier*myConfig.highGlucoseThreshold && myConfig.highGlucoseWarningBackgroundEnabled) {
 		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
 	} else {
 		myStatusBarItem.backgroundColor = undefined;
