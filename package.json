@@ -3,7 +3,7 @@
   "displayName": "Nightscout Status Bar",
   "description": "VS Code Extension to show Nightscout blood glucose reading in the status bar.",
   "icon": "images/nightscout-logo.png",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "license": "MIT",
   "repository": {
 		"type": "git",
@@ -72,11 +72,17 @@
           "default": "milligrams",
           "description": "Blood glucose units"
         },
-        "nightscout-status-bar.high-glucose-warning.enabled": {
+        "nightscout-status-bar.high-glucose-warning-message.enabled": {
           "type": "boolean",
           "scope": "machine",
           "default": true,
-          "description": "Enable high glucose warning"
+          "description": "Enable high glucose warning pop-up message"
+        },
+        "nightscout-status-bar.high-glucose-warning-background-color.enabled": {
+          "type": "boolean",
+          "scope": "machine",
+          "default": true,
+          "description": "Enable high glucose warning background color"
         },
         "nightscout-status-bar.high-glucose-warning.value": {
           "type": "number",
@@ -84,11 +90,17 @@
           "default": 180,
           "description": "High glucose warning value (in mg/dL)"
         },
-        "nightscout-status-bar.low-glucose-warning.enabled": {
+        "nightscout-status-bar.low-glucose-warning-message.enabled": {
           "type": "boolean",
           "scope": "machine",
           "default": true,
-          "description": "Enable low glucose warning"
+          "description": "Enable low glucose warning pop-up message"
+        },
+        "nightscout-status-bar.low-glucose-warning-background-color.enabled": {
+          "type": "boolean",
+          "scope": "machine",
+          "default": true,
+          "description": "Enable low glucose warning background color"
         },
         "nightscout-status-bar.low-glucose-warning.value": {
           "type": "number",
