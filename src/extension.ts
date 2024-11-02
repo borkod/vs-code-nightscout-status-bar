@@ -24,14 +24,31 @@ interface nightscoutConfig {
 	nightscoutHost: string;
 	token: string;
 	lowGlucoseWarningEnabled: boolean;
+	lowGlucoseWarningBackgroundEnabled: boolean;
 	highGlucoseWarningEnabled: boolean;
+	highGlucoseWarningBackgroundEnabled: boolean;
 	lowGlucoseThreshold: number;
 	highGlucoseThreshold: number;
 	updateInterval: number;
 }
 
 // Default configuration for the extension
-let myConfig: nightscoutConfig = { glucoseUnits: 'milligrams', nightscoutHost: '', token: '', lowGlucoseWarningEnabled: true, highGlucoseWarningEnabled: true, lowGlucoseThreshold: 70, highGlucoseThreshold: 180, updateInterval: 10 };
+let myConfig: nightscoutConfig = {
+	glucoseUnits: 'milligrams',
+	nightscoutHost: '',
+	token: '',
+	lowGlucoseWarningEnabled: true,
+	lowGlucoseWarningBackgroundEnabled: true,
+	highGlucoseWarningEnabled: true,
+	highGlucoseWarningBackgroundEnabled: true,
+	lowGlucoseThreshold: 70,
+	highGlucoseThreshold: 180,
+	updateInterval: 10
+};
+
+// Multipliers for the low and high glucose thresholds
+let lowGlucoseMultiplier = 1.15;
+let highGlucoseMultiplier = 0.85;
 
 // Output channel for logging
 let logOutputChannel : vscode.LogOutputChannel;
@@ -119,8 +136,10 @@ function updateConfig(): void {
     myConfig.glucoseUnits = config.get<string>('glucoseUnits', 'milligrams');
     myConfig.nightscoutHost = config.get<string>('nightscoutHost', '');
     myConfig.token = config.get<string>('token', '');
-	myConfig.lowGlucoseWarningEnabled = config.get<boolean>('low-glucose-warning.enabled', true);
-	myConfig.highGlucoseWarningEnabled = config.get<boolean>('high-glucose-warning.enabled', true);
+	myConfig.lowGlucoseWarningEnabled = config.get<boolean>('low-glucose-warning-message.enabled', true);
+	myConfig.lowGlucoseWarningBackgroundEnabled = config.get<boolean>('low-glucose-warning-background-color.enabled', true);
+	myConfig.highGlucoseWarningEnabled = config.get<boolean>('high-glucose-warning-message.enabled', true);
+	myConfig.highGlucoseWarningBackgroundEnabled = config.get<boolean>('high-glucose-warning-background-color.enabled', true);
 	myConfig.lowGlucoseThreshold = config.get<number>('low-glucose-warning.value', 70);
 	myConfig.highGlucoseThreshold = config.get<number>('high-glucose-warning.value', 180);
 	myConfig.updateInterval = config.get<number>('updateInterval', 10);
@@ -263,6 +282,18 @@ function showWarning(): void {
 		vscode.window.showWarningMessage(`Low blood glucose!`);
 	} else if (currentResult.sgv > 0 && currentResult.sgv > myConfig.highGlucoseThreshold && myConfig.highGlucoseWarningEnabled) {
 		vscode.window.showWarningMessage(`High blood glucose!`);
+	}
+
+	if (currentResult.sgv > 0 && currentResult.sgv < myConfig.lowGlucoseThreshold && myConfig.lowGlucoseWarningBackgroundEnabled) {
+		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
+	} else if (currentResult.sgv > 0 && currentResult.sgv < lowGlucoseMultiplier*myConfig.lowGlucoseThreshold && (currentResult.direction === 'SingleDown' || currentResult.direction === 'DoubleDown') && myConfig.lowGlucoseWarningBackgroundEnabled) {
+		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+	} else if (currentResult.sgv > 0 && currentResult.sgv > myConfig.highGlucoseThreshold && myConfig.highGlucoseWarningBackgroundEnabled) {
+		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.errorBackground');
+	} else if (currentResult.sgv > 0 && currentResult.sgv > highGlucoseMultiplier*myConfig.highGlucoseThreshold && (currentResult.direction === 'SingleUp' || currentResult.direction === 'DoubleUp') && myConfig.highGlucoseWarningBackgroundEnabled) {
+		myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+	} else {
+		myStatusBarItem.backgroundColor = undefined;
 	}
 }
 

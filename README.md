@@ -12,10 +12,11 @@ This Visual Studio Code extension retrieves the most recent blood glucose readin
 - Provides visual indicator of your blood glucose levels trend
 - Provides `Nightscout: Update and Show Last Entry Date` command to manually trigger an update and display the date and time of the latest reading in your Nightscout instance
   - Command can be triggered by clicking on your blood glucose reading in the status bar or via VS Code Command Palette
-- Low and High blood glucose level warnings
+- Low and high blood glucose level warnings
 
 ![Nightscout Extension Warning](https://raw.githubusercontent.com/borkod/vs-code-nightscout-status-bar/main/images/nightscout-warning.gif)
 
+- Status bar background color change on low or high blood glucose level warnings
 - Fully configurable settings
 
 ## Requirements
