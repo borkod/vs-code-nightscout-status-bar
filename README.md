@@ -4,6 +4,8 @@
 
 This Visual Studio Code extension retrieves the most recent blood glucose reading from your Nightscout instance and displays it in your Visual Studio Code status bar.
 
+If you're a user of FreeStyle Libre or Dexcom sensors, you may be interested in [LibreLinkUp Status Bar Extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=borkod.librelinkup-vs-code-extension) or [Dexcom CGM Status Bar Extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=borkod.dexcom-vs-code-extension).
+
 ![Nightscout Extension for Visual Studio Code](https://raw.githubusercontent.com/borkod/vs-code-nightscout-status-bar/main/images/nightscout-vs-code.gif)
 
 ## Features
@@ -52,3 +54,5 @@ This extension was inspired by Scott Hanselman's [blog post](https://www.hanselm
 I was looking for a tool that would allow me to monitor my blood glucose levels without distractions. As a Visual Studio Code user, I believed that displaying the readings in the status bar would seamlessly integrate with my development environment.
 
 I hope others find this tool helpful too!
+
+If you would like to support this project, feel free to [buy me a coffee](https://buymeacoffee.com/borkod).
